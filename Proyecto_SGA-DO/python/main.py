@@ -1,4 +1,6 @@
-# --- CLASES (Modelado) ---
+import os
+
+# --- CLASES ---
 class Persona:
     def __init__(self, cedula, nombre, correo):
         self.cedula = cedula
@@ -12,7 +14,7 @@ class Profesor(Persona):
         self.materia = materia
 
 class ProgramaAcademico:
-    def evaluarAprobacion(self, alumno): pass # Polimorfismo
+    def evaluarAprobacion(self, alumno): pass
 
 class Curso(ProgramaAcademico):
     def evaluarAprobacion(self, alumno):
@@ -39,7 +41,7 @@ alumnos = []
 profesores = []
 pila_deshacer = []
 
-# --- FUNCIONES DE GUARDADO ---
+# --- FUNCIONES DE GUARDADO Y CARGA ---
 def guardar_alumnos():
     with open("alumnos.txt", "w") as f:
         for a in alumnos:
@@ -50,8 +52,31 @@ def guardar_profesores():
         for p in profesores:
             f.write(f"{p.cedula},{p.nombre},{p.correo},{p.especialidad},{p.materia}\n")
 
+def cargar_datos(): # <--- ESTA ES LA FUNCIÓN QUE PIDE EL PROFESOR
+    if os.path.exists("alumnos.txt"):
+        with open("alumnos.txt", "r") as f:
+            for line in f:
+                datos = line.strip().split(",")
+                if len(datos) == 7:
+                    ced, nom, cor, tipo_prog, n1, n2, n3 = datos
+                    prog = Curso() if tipo_prog == "Curso" else Diplomado() if tipo_prog == "Diplomado" else Bootcamp()
+                    alumno = Alumno(ced, nom, cor, prog)
+                    alumno.n1, alumno.n2, alumno.n3 = float(n1), float(n2), float(n3)
+                    alumnos.append(alumno)
+                    
+    if os.path.exists("profesores.txt"):
+        with open("profesores.txt", "r") as f:
+            for line in f:
+                datos = line.strip().split(",")
+                if len(datos) == 5:
+                    ced, nom, cor, esp, mat = datos
+                    profesores.append(Profesor(ced, nom, cor, esp, mat))
+
 # --- MENÚ INTERACTIVO ---
 def menu():
+    cargar_datos() # <--- CARGA LOS DATOS AL INICIAR
+    print(f"Datos cargados en memoria: {len(alumnos)} alumnos, {len(profesores)} profesores.")
+    
     while True:
         print("\n=== SGA-DO: SISTEMA DIPLOMADOSONLINE ===")
         print("1. Registrar Alumno\n2. Registrar Profesor\n3. Registrar Notas a un Alumno")
